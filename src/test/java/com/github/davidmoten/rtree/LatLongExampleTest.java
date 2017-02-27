@@ -45,7 +45,7 @@ public class LatLongExampleTest {
     }
 
     public static <T> Observable<Entry<T, Point>> search(RTree<T, Point> tree, Point lonLat,
-            final double distanceKm) {
+                                                         final double distanceKm) {
         // First we need to calculate an enclosing lat long rectangle for this
         // distance then we refine on the exact distance
         final Position from = Position.create(lonLat.y(), lonLat.x());

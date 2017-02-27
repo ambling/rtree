@@ -17,6 +17,7 @@ import com.github.davidmoten.rtree.geometry.Point;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.internal.Comparators;
 import com.github.davidmoten.rtree.internal.NodeAndEntries;
+import com.github.davidmoten.rtree.internal.RTreeDefault;
 import com.github.davidmoten.rtree.internal.operators.OperatorBoundedPriorityQueue;
 
 import rx.Observable;
@@ -31,10 +32,47 @@ import rx.functions.Func2;
  * @param <S>
  *            the entry geometry type
  */
-public final class RTree<T, S extends Geometry> {
+public abstract class RTree<T, S extends Geometry> {
 
-    private final Optional<? extends Node<T, S>> root;
-    private final Context<T, S> context;
+    public abstract Optional<? extends Node<T, S>> root();
+
+    /**
+     * If the RTree has no entries returns {@link Optional#absent} otherwise
+     * returns the minimum bounding rectangle of all entries in the RTree.
+     *
+     * @return minimum bounding rectangle of all entries in RTree
+     */
+    public Optional<Rectangle> mbr() {
+        if (!root().isPresent())
+            return absent();
+        else
+            return of(root().get().geometry().mbr());
+    }
+
+    /**
+     * Returns true if and only if the R-tree is empty of entries.
+     *
+     * @return is R-tree empty
+     */
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    /**
+     * Returns the number of entries in the RTree.
+     *
+     * @return the number of entries
+     */
+    public abstract int size();
+
+    /**
+     * Returns a {@link Context} containing the configuration of the RTree at
+     * the time of instantiation.
+     *
+     * @return the configuration of the RTree prior to instantiation
+     */
+    public abstract Context<T, S> context();
+
 
     /**
      * Benchmarks show that this is a good choice for up to O(10,000) entries
@@ -48,44 +86,9 @@ public final class RTree<T, S extends Geometry> {
      */
     public static final int MAX_CHILDREN_DEFAULT_STAR = 4;
 
-    /**
-     * Current size in Entries of the RTree.
-     */
-    private final int size;
-
-    /**
-     * Constructor.
-     * 
-     * @param root
-     *            the root node of the tree if present
-     * @param context
-     *            options for the R-tree
-     */
-    private RTree(Optional<? extends Node<T, S>> root, int size, Context<T, S> context) {
-        this.root = root;
-        this.size = size;
-        this.context = context;
-    }
-
-    private RTree() {
-        this(Optional.<Node<T, S>> absent(), 0, null);
-    }
-
-    /**
-     * Constructor.
-     * 
-     * @param root
-     *            the root node of the R-tree
-     * @param context
-     *            options for the R-tree
-     */
-    private RTree(Node<T, S> root, int size, Context<T, S> context) {
-        this(of(root), size, context);
-    }
-
-    static <T, S extends Geometry> RTree<T, S> create(Optional<? extends Node<T, S>> root, int size,
-            Context<T, S> context) {
-        return new RTree<T, S>(root, size, context);
+    static <T, S extends Geometry> RTree<T, S> createDefault(
+            Optional<? extends Node<T, S>> root, int size, Context<T, S> context) {
+        return new RTreeDefault<T, S>(root, size, context);
     }
 
     /**
@@ -98,9 +101,19 @@ public final class RTree<T, S extends Geometry> {
      *            the geometry type of the entries in the tree
      * @return a new RTree instance
      */
-    public static <T, S extends Geometry> RTree<T, S> create() {
+    public static <T, S extends Geometry> RTree<T, S> createDefault() {
         return new Builder().create();
     }
+
+    /**
+     * Constructors that should be implemented by sub-classes
+     */
+    protected abstract RTree<T, S> create();
+
+    protected abstract RTree<T, S> create(Node<T, S> root, int size, Context<T, S> context);
+
+    protected abstract RTree<T, S> create(
+            Optional<? extends Node<T, S>> root, int size, Context<T, S> context);
 
     /**
      * The tree is scanned for depth and the depth returned. This involves
@@ -110,7 +123,7 @@ public final class RTree<T, S extends Geometry> {
      * @return depth of the R-tree
      */
     public int calculateDepth() {
-        return calculateDepth(root);
+        return calculateDepth(root());
     }
 
     private static <T, S extends Geometry> int calculateDepth(Optional<? extends Node<T, S>> root) {
@@ -299,7 +312,7 @@ public final class RTree<T, S extends Geometry> {
                     maxChildren = of(MAX_CHILDREN_DEFAULT_GUTTMAN);
             if (!minChildren.isPresent())
                 minChildren = of((int) Math.round(maxChildren.get() * DEFAULT_FILLING_FACTOR));
-            return new RTree<T, S>(Optional.<Node<T, S>> absent(), 0,
+            return new RTreeDefault<T, S>(Optional.<Node<T, S>> absent(), 0,
                     new Context<T, S>(minChildren.get(), maxChildren.get(), selector, splitter,
                             (Factory<T, S>) factory));
         }
@@ -315,19 +328,19 @@ public final class RTree<T, S extends Geometry> {
      */
     @SuppressWarnings("unchecked")
     public RTree<T, S> add(Entry<? extends T, ? extends S> entry) {
-        if (root.isPresent()) {
-            List<Node<T, S>> nodes = root.get().add(entry);
+        if (root().isPresent()) {
+            List<Node<T, S>> nodes = root().get().add(entry);
             Node<T, S> node;
             if (nodes.size() == 1)
                 node = nodes.get(0);
             else {
-                node = context.factory().createNonLeaf(nodes, context);
+                node = context().factory().createNonLeaf(nodes, context());
             }
-            return new RTree<T, S>(node, size + 1, context);
+            return create(node, size() + 1, context());
         } else {
-            Leaf<T, S> node = context.factory().createLeaf(Lists.newArrayList((Entry<T, S>) entry),
-                    context);
-            return new RTree<T, S>(node, size + 1, context);
+            Leaf<T, S> node = context().factory().createLeaf(Lists.newArrayList((Entry<T, S>) entry),
+                    context());
+            return create(node, size() + 1, context());
         }
     }
 
@@ -342,7 +355,7 @@ public final class RTree<T, S extends Geometry> {
      * @return a new immutable R-tree including the new entry
      */
     public RTree<T, S> add(T value, S geometry) {
-        return add(context.factory().createEntry(value, geometry));
+        return add(context().factory().createEntry(value, geometry));
     }
 
     /**
@@ -450,7 +463,7 @@ public final class RTree<T, S extends Geometry> {
      *         object
      */
     public RTree<T, S> delete(T value, S geometry, boolean all) {
-        return delete(context.factory().createEntry(value, geometry), all);
+        return delete(context().factory().createEntry(value, geometry), all);
     }
 
     /**
@@ -466,7 +479,7 @@ public final class RTree<T, S extends Geometry> {
      *         given value and geometry
      */
     public RTree<T, S> delete(T value, S geometry) {
-        return delete(context.factory().createEntry(value, geometry), false);
+        return delete(context().factory().createEntry(value, geometry), false);
     }
 
     /**
@@ -484,14 +497,14 @@ public final class RTree<T, S extends Geometry> {
      *         entry
      */
     public RTree<T, S> delete(Entry<? extends T, ? extends S> entry, boolean all) {
-        if (root.isPresent()) {
-            NodeAndEntries<T, S> nodeAndEntries = root.get().delete(entry, all);
-            if (nodeAndEntries.node().isPresent() && nodeAndEntries.node().get() == root.get())
+        if (root().isPresent()) {
+            NodeAndEntries<T, S> nodeAndEntries = root().get().delete(entry, all);
+            if (nodeAndEntries.node().isPresent() && nodeAndEntries.node().get() == root().get())
                 return this;
             else
-                return new RTree<T, S>(nodeAndEntries.node(),
-                        size - nodeAndEntries.countDeleted() - nodeAndEntries.entriesToAdd().size(),
-                        context).add(nodeAndEntries.entriesToAdd());
+                return create(nodeAndEntries.node(),
+                        size() - nodeAndEntries.countDeleted() - nodeAndEntries.entriesToAdd().size(),
+                        context()).add(nodeAndEntries.entriesToAdd());
         } else
             return this;
     }
@@ -532,8 +545,8 @@ public final class RTree<T, S extends Geometry> {
      */
     @VisibleForTesting
     Observable<Entry<T, S>> search(Func1<? super Geometry, Boolean> condition) {
-        if (root.isPresent())
-            return Observable.create(new OnSubscribeSearch<T, S>(root.get(), condition));
+        if (root().isPresent())
+            return Observable.create(new OnSubscribeSearch<T, S>(root().get(), condition));
         else
             return Observable.empty();
     }
@@ -783,51 +796,6 @@ public final class RTree<T, S extends Geometry> {
                 }).toBlocking().single().or(rectangle(0, 0, 0, 0));
     }
 
-    public Optional<? extends Node<T, S>> root() {
-        return root;
-    }
-
-    /**
-     * If the RTree has no entries returns {@link Optional#absent} otherwise
-     * returns the minimum bounding rectangle of all entries in the RTree.
-     * 
-     * @return minimum bounding rectangle of all entries in RTree
-     */
-    public Optional<Rectangle> mbr() {
-        if (!root.isPresent())
-            return absent();
-        else
-            return of(root.get().geometry().mbr());
-    }
-
-    /**
-     * Returns true if and only if the R-tree is empty of entries.
-     * 
-     * @return is R-tree empty
-     */
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    /**
-     * Returns the number of entries in the RTree.
-     * 
-     * @return the number of entries
-     */
-    public int size() {
-        return size;
-    }
-
-    /**
-     * Returns a {@link Context} containing the configuration of the RTree at
-     * the time of instantiation.
-     * 
-     * @return the configuration of the RTree prior to instantiation
-     */
-    public Context<T, S> context() {
-        return context;
-    }
-
     /**
      * Returns a human readable form of the RTree. Here's an example:
      * 
@@ -845,10 +813,10 @@ public final class RTree<T, S extends Geometry> {
      * @return a string representation of the RTree
      */
     public String asString() {
-        if (!root.isPresent())
+        if (!root().isPresent())
             return "";
         else
-            return asString(root.get(), "");
+            return asString(root().get(), "");
     }
 
     private final static String marginIncrement = "  ";

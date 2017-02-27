@@ -62,7 +62,7 @@ public class SerializersTest {
         Entry<String, Point> a = Entries.entry("hello", Geometries.point(1, 2));
         Entry<String, Point> b = Entries.entry("there", Geometries.point(3, 4));
         Entry<String, Point> c = Entries.entry("you", Geometries.point(5, 6));
-        RTree<String, Point> tree = RTree.create();
+        RTree<String, Point> tree = RTree.createDefault();
         tree = tree.add(a).add(b);
         Serializer<String, Point> serializer = Serializers.flatBuffers().utf8();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -81,7 +81,7 @@ public class SerializersTest {
     public void testDeleteFromFlatBuffers() throws IOException {
         Entry<String, Point> a = Entries.entry("hello", Geometries.point(1, 2));
         Entry<String, Point> b = Entries.entry("there", Geometries.point(3, 4));
-        RTree<String, Point> tree = RTree.create();
+        RTree<String, Point> tree = RTree.createDefault();
         tree = tree.add(a).add(b);
         Serializer<String, Point> serializer = Serializers.flatBuffers().utf8();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -103,7 +103,7 @@ public class SerializersTest {
         Entry<String, Point> c = Entries.entry("you", Geometries.point(5, 6));
         Entry<String, Point> d = Entries.entry("smart", Geometries.point(7, 8));
         Entry<String, Point> e = Entries.entry("person", Geometries.point(9, 10));
-        RTree<String, Point> tree = RTree.create();
+        RTree<String, Point> tree = RTree.createDefault();
         tree = tree.add(a).add(b).add(c).add(d).add(e);
         Serializer<String, Point> serializer = Serializers.flatBuffers().utf8();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -125,7 +125,7 @@ public class SerializersTest {
         Entry<String, Point> c = Entries.entry("you", Geometries.point(5, 6));
         Entry<String, Point> d = Entries.entry("smart", Geometries.point(7, 8));
         Entry<String, Point> e = Entries.entry("person", Geometries.point(9, 10));
-        RTree<String, Point> tree = RTree.create();
+        RTree<String, Point> tree = RTree.createDefault();
         tree = tree.add(a).add(b).add(c).add(d).add(e);
         Serializer<String, Point> serializer = Serializers.flatBuffers().utf8();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -141,7 +141,7 @@ public class SerializersTest {
 
     @Test
     public void canRoundTripEmptyTree() throws IOException {
-        RTree<String, Point> tree = RTree.create();
+        RTree<String, Point> tree = RTree.createDefault();
         Serializer<String, Point> serializer = Serializers.flatBuffers().utf8();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         serializer.write(tree, bytes);
@@ -162,7 +162,7 @@ public class SerializersTest {
     @SuppressWarnings("unchecked")
     private static <S extends Geometry> void check(Serializer<String, S> serializer,
             Entry<String, S> a, Entry<String, S> b) throws IOException {
-        RTree<String, S> tree = RTree.create();
+        RTree<String, S> tree = RTree.createDefault();
         tree = tree.add(a).add(b);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         serializer.write(tree, bytes);

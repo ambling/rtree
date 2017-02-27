@@ -14,7 +14,7 @@ public class ImageSaverTest {
 
     @Test
     public void testSaveImageToNonExistentDirectoryThrowsRuntimeException() {
-        Visualizer v = RTree.create().visualize(100, 100);
+        Visualizer v = RTree.createDefault().visualize(100, 100);
         v.save("target/saved-image");
     }
 

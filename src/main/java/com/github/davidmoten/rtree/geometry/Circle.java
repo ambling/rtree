@@ -6,46 +6,28 @@ import com.github.davidmoten.guavamini.Objects;
 import com.github.davidmoten.guavamini.Optional;
 import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
 
-public final class Circle implements Geometry {
+public abstract class Circle implements Geometry {
 
-    private final float x, y, radius;
-    private final Rectangle mbr;
-
-    protected Circle(float x, float y, float radius) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.mbr = RectangleImpl.create(x - radius, y - radius, x + radius, y + radius);
+    public static Circle create(double x, double y, double radius) {
+        return create((float) x, (float) y, (float) radius);
     }
 
-    static Circle create(double x, double y, double radius) {
-        return new Circle((float) x, (float) y, (float) radius);
+    public static Circle create(float x, float y, float radius) {
+        return new CircleImpl(x, y, radius);
     }
 
-    static Circle create(float x, float y, float radius) {
-        return new Circle(x, y, radius);
-    }
+    public abstract float x();
 
-    public float x() {
-        return x;
-    }
+    public abstract float y();
 
-    public float y() {
-        return y;
-    }
-
-    public float radius() {
-        return radius;
-    }
+    public abstract float radius();
 
     @Override
-    public Rectangle mbr() {
-        return mbr;
-    }
+    public abstract Rectangle mbr();
 
     @Override
     public double distance(Rectangle r) {
-        return Math.max(0, point(x, y).distance(r) - radius);
+        return Math.max(0, point(x(), y()).distance(r) - radius());
     }
 
     @Override
@@ -54,27 +36,20 @@ public final class Circle implements Geometry {
     }
 
     public boolean intersects(Circle c) {
-        double total = radius + c.radius;
-        return point(x, y).distanceSquared(point(c.x, c.y)) <= total * total;
+        double total = radius() + c.radius();
+        return point(x(), y()).distanceSquared(point(c.x(), c.y())) <= total * total;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(x, y, radius);
+        return Objects.hashCode(x(), y(), radius());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        Optional<Circle> other = ObjectsHelper.asClass(obj, Circle.class);
-        if (other.isPresent()) {
-            return Objects.equal(x, other.get().x) && Objects.equal(y, other.get().y)
-                    && Objects.equal(radius, other.get().radius);
-        } else
-            return false;
-    }
+    public abstract boolean equals(Object obj);
 
     public boolean intersects(Point point) {
-        return Math.sqrt(sqr(x - point.x()) + sqr(y - point.y())) <= radius;
+        return Math.sqrt(sqr(x() - point.x()) + sqr(y() - point.y())) <= radius();
     }
 
     private float sqr(float x) {
