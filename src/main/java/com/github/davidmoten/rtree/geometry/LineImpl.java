@@ -1,13 +1,12 @@
 package com.github.davidmoten.rtree.geometry;
 
-import com.github.davidmoten.guavamini.Objects;
 import com.github.davidmoten.guavamini.Optional;
 import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
 
 /**
  * Simple implementation of Line
  */
-public class LineImpl extends Line {
+public class LineImpl implements Line {
 
 
     private final float x1;
@@ -43,11 +42,50 @@ public class LineImpl extends Line {
     }
 
     @Override
+    public double distance(Rectangle r) {
+        return Line.Helper.distance(this, r);
+    }
+
+    @Override
+    public Rectangle mbr() {
+        return Line.Helper.mbr(this);
+    }
+
+    @Override
+    public boolean intersects(Rectangle r) {
+        return Line.Helper.intersects(this, r);
+    }
+
+    @Override
+    public boolean intersects(Line b) {
+        return Line.Helper.intersects(this, b);
+    }
+
+    @Override
+    public boolean intersects(Point point) {
+        return Line.Helper.intersects(this, point);
+    }
+
+    @Override
+    public boolean intersects(Circle circle) {
+        return Line.Helper.intersects(this, circle);
+    }
+
+    @Override
+    public String toString() {
+        return Line.Helper.toString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return Line.Helper.hashCode(this);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         Optional<LineImpl> other = ObjectsHelper.asClass(obj, LineImpl.class);
         if (other.isPresent()) {
-            return Objects.equal(x1, other.get().x1) && Objects.equal(x2, other.get().x2)
-                    && Objects.equal(y1, other.get().y1) && Objects.equal(y2, other.get().y2);
+            return Line.Helper.equals(this, other.get());
         } else
             return false;
     }

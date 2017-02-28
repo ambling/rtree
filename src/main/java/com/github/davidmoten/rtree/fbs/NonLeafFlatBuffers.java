@@ -67,7 +67,7 @@ final class NonLeafFlatBuffers<T, S extends Geometry> implements NonLeaf<T, S> {
         {
             node.mbb(box);
             if (!criterion
-                    .call(Geometries.rectangle(box.minX(), box.minY(), box.maxX(), box.maxY())))
+                    .call(Geometries.rectangle(box.x1(), box.y1(), box.x2(), box.y2())))
                 return;
         }
         int numChildren = node.childrenLength();

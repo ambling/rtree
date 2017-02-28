@@ -13,10 +13,10 @@ table Node_ {
 }
 
 struct Box_ {
-  minX:float;
-  minY:float;
-  maxX:float;
-  maxY:float;
+  x1:float;
+  y1:float;
+  x2:float;
+  y2:float;
 }
 
 struct Point_ {
@@ -31,10 +31,10 @@ struct Circle_ {
 }
 
 struct Line_ {
-  minX:float;
-  minY:float;
-  maxX:float;
-  maxY:float;
+  x1:float;
+  y1:float;
+  x2:float;
+  y2:float;
 }
 
 table Entry_ {

@@ -1,62 +1,76 @@
 package com.github.davidmoten.rtree.geometry;
 
+import com.github.davidmoten.guavamini.Objects;
+
 import static com.github.davidmoten.rtree.geometry.Geometries.point;
 
-import com.github.davidmoten.guavamini.Objects;
-import com.github.davidmoten.guavamini.Optional;
-import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
+public interface Circle extends Geometry {
 
-public abstract class Circle implements Geometry {
+    public float x();
 
-    public static Circle create(double x, double y, double radius) {
-        return create((float) x, (float) y, (float) radius);
-    }
+    public float y();
 
-    public static Circle create(float x, float y, float radius) {
-        return new CircleImpl(x, y, radius);
-    }
+    public float radius();
 
-    public abstract float x();
+    public boolean intersects(Circle c);
 
-    public abstract float y();
+    public boolean intersects(Point point);
 
-    public abstract float radius();
+    public boolean intersects(Line line);
 
-    @Override
-    public abstract Rectangle mbr();
+    public static class Helper {
 
-    @Override
-    public double distance(Rectangle r) {
-        return Math.max(0, point(x(), y()).distance(r) - radius());
-    }
+        public static Circle create(double x, double y, double radius) {
+            return create((float) x, (float) y, (float) radius);
+        }
 
-    @Override
-    public boolean intersects(Rectangle r) {
-        return distance(r) == 0;
-    }
+        public static Circle create(float x, float y, float radius) {
+            return new CircleImpl(x, y, radius);
+        }
 
-    public boolean intersects(Circle c) {
-        double total = radius() + c.radius();
-        return point(x(), y()).distanceSquared(point(c.x(), c.y())) <= total * total;
-    }
+        public static Rectangle mbr(Circle c) {
+            return Rectangle.Helper.create(c.x() - c.radius(), c.y() - c.radius(),
+                    c.x() + c.radius(), c.y() + c.radius());
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(x(), y(), radius());
-    }
+        public static double distance(Circle c, Rectangle r) {
+            return Math.max(0, point(c.x(), c.y()).distance(r) - c.radius());
+        }
 
-    @Override
-    public abstract boolean equals(Object obj);
+        public static boolean intersects(Circle c, Rectangle r) {
+            return distance(c, r) == 0;
+        }
 
-    public boolean intersects(Point point) {
-        return Math.sqrt(sqr(x() - point.x()) + sqr(y() - point.y())) <= radius();
-    }
+        public static boolean intersects(Circle c0, Circle c) {
+            double total = c0.radius() + c.radius();
+            return point(c0.x(), c0.y()).distanceSquared(point(c.x(), c.y())) <= total * total;
+        }
 
-    private float sqr(float x) {
-        return x * x;
-    }
+        public static String toString(Circle c) {
+            return "Circle [x=" + c.x() + ", y=" + c.y() + ", radius=" + c.radius() + "]";
+        }
 
-    public boolean intersects(Line line) {
-        return line.intersects(this);
+        public static int hashCode(Circle c) {
+            return Objects.hashCode(c.x(), c.y(), c.radius());
+        }
+
+        public static boolean equals(Circle c, Circle other) {
+            return Objects.equal(c.x(), other.x()) && Objects.equal(c.y(), other.y())
+                    && Objects.equal(c.radius(), other.radius());
+        }
+
+        public static boolean intersects(Circle c, Point point) {
+            return Math.sqrt(sqr(c.x() - point.x()) + sqr(c.y() - point.y())) <= c.radius();
+        }
+
+        private static float sqr(float x) {
+            return x * x;
+        }
+
+        public static boolean intersects(Circle c, Line line) {
+            return Line.Helper.intersects(line, c);
+        }
+
+
     }
 }

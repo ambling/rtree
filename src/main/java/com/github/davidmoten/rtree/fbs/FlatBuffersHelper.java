@@ -148,11 +148,11 @@ final class FlatBuffersHelper {
     }
 
     static Rectangle createBox(Box_ b) {
-        return Geometries.rectangle(b.minX(), b.minY(), b.maxX(), b.maxY());
+        return Geometries.rectangle(b.x1(), b.y1(), b.x2(), b.y2());
     }
 
     static Line createLine(Box_ b) {
-        return Geometries.line(b.minX(), b.minY(), b.maxX(), b.maxY());
+        return Geometries.line(b.x1(), b.y1(), b.x2(), b.y2());
     }
 
 }

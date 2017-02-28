@@ -1,11 +1,10 @@
 package com.github.davidmoten.rtree.geometry;
 
-import com.github.davidmoten.guavamini.Objects;
 import com.github.davidmoten.guavamini.Optional;
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
 
-final class RectangleImpl extends Rectangle {
+final class RectangleImpl implements Rectangle {
     private final float x1, y1, x2, y2;
 
     protected RectangleImpl(float x1, float y1, float x2, float y2) {
@@ -58,13 +57,66 @@ final class RectangleImpl extends Rectangle {
     }
 
     @Override
+    public float area() {
+        return Rectangle.Helper.area(this);
+    }
+
+    @Override
+    public Rectangle add(Rectangle r) {
+        return Rectangle.Helper.add(this, r);
+    }
+
+    @Override
+    public boolean contains(double x, double y) {
+        return Rectangle.Helper.contains(this, x, y);
+    }
+
+    @Override
+    public boolean intersects(Rectangle r) {
+        return Rectangle.Helper.intersects(this, r);
+    }
+
+    @Override
+    public double distance(Rectangle r) {
+        return Rectangle.Helper.distance(this, r);
+    }
+
+    @Override
+    public Rectangle mbr() {
+        return this;
+    }
+
+    @Override
+    public float intersectionArea(Rectangle r) {
+        return Rectangle.Helper.intersectionArea(this, r);
+    }
+
+    @Override
+    public float perimeter() {
+        return Rectangle.Helper.perimeter(this);
+    }
+
+    @Override
+    public Geometry geometry() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return Rectangle.Helper.toString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return Rectangle.Helper.hashCode(this);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         Optional<RectangleImpl> other = ObjectsHelper.asClass(obj, RectangleImpl.class);
         if (other.isPresent()) {
-            return Objects.equal(x1, other.get().x1) && Objects.equal(x2, other.get().x2)
-                    && Objects.equal(y1, other.get().y1) && Objects.equal(y2, other.get().y2);
+            return Rectangle.Helper.equals(this, other.get());
         } else
             return false;
     }
-
 }

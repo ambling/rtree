@@ -74,6 +74,16 @@
             </roles>
             <timezone>+10</timezone>
         </developer>
+
+        <developer>
+            <id>ambling</id>
+            <name>Ambling Ding</name>
+            <url>https://github.com/ambling/</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
     </developers>
 
     <scm>

@@ -9,35 +9,35 @@ public final class Geometries {
     }
 
     public static Point point(double x, double y) {
-        return Point.create(x, y);
+        return Point.Helper.create(x, y);
     }
 
     public static Point point(float x, float y) {
-        return Point.create(x, y);
+        return Point.Helper.create(x, y);
     }
 
     public static Rectangle rectangle(double x1, double y1, double x2, double y2) {
-        return RectangleImpl.create(x1, y1, x2, y2);
+        return Rectangle.Helper.create(x1, y1, x2, y2);
     }
 
     public static Rectangle rectangle(float x1, float y1, float x2, float y2) {
-        return RectangleImpl.create(x1, y1, x2, y2);
+        return Rectangle.Helper.create(x1, y1, x2, y2);
     }
 
     public static Circle circle(double x, double y, double radius) {
-        return Circle.create(x, y, radius);
+        return Circle.Helper.create(x, y, radius);
     }
 
     public static Circle circle(float x, float y, float radius) {
-        return Circle.create(x, y, radius);
+        return Circle.Helper.create(x, y, radius);
     }
 
     public static Line line(double x1, double y1, double x2, double y2) {
-        return Line.create(x1, y1, x2, y2);
+        return Line.Helper.create(x1, y1, x2, y2);
     }
 
     public static Line line(float x1, float y1, float x2, float y2) {
-        return Line.create(x1, y1, x2, y2);
+        return Line.Helper.create(x1, y1, x2, y2);
     }
 
     public static Rectangle rectangleGeographic(double lon1, double lat1, double lon2,
