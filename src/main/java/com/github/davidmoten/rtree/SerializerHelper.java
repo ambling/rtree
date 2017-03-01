@@ -11,7 +11,7 @@ public final class SerializerHelper {
 
     public static <T, S extends Geometry> RTree<T, S> create(Optional<Node<T, S>> root, int size,
                                                              Context<T, S> context) {
-        return RTree.createDefault(root, size, context);
+        return RTree.create(root, size, context);
     }
 
 }

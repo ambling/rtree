@@ -22,7 +22,7 @@ public class KryoSerializationTest {
         Kryo kryo = new Kryo();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         Output output = new Output(bytes);
-        RTree<String, Point> tree = RTree.<String, Point> createDefault()
+        RTree<String, Point> tree = RTree.<String, Point> create()
                 .add(Entries.entry("thing", Geometries.point(10, 20)))
                 .add(Entries.entry("monster", Geometries.point(23, 45)));
         kryo.writeObject(output, tree);
