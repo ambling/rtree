@@ -12,15 +12,13 @@ import com.github.davidmoten.rtree.Node;
 import com.github.davidmoten.rtree.NonLeaf;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.internal.FactoryDefault;
+import com.github.davidmoten.rtree.internal.LeafDefault;
 import com.github.davidmoten.rtree.internal.NonLeafDefault;
 import com.github.davidmoten.util.Preconditions;
 
 import rx.functions.Func1;
 
 /**
- * Conserves memory in comparison to {@link FactoryDefault} especially for
- * larger {@code maxChildren} by saving Leaf objects to byte arrays and using
- * FlatBuffers to access the byte array.
  *
  * @param <T>
  *            the object type
@@ -40,7 +38,7 @@ public final class FactoryFlatBuffers<T, S extends Geometry> implements Factory<
 
     @Override
     public Leaf<T, S> createLeaf(List<Entry<T, S>> entries, Context<T, S> context) {
-        return new LeafFlatBuffers<T, S>(entries, context, serializer, deserializer);
+        return new LeafDefault<T, S>(entries, context);
     }
 
     @Override

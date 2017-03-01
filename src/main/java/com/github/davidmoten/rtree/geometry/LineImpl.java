@@ -83,10 +83,6 @@ public class LineImpl implements Line {
 
     @Override
     public boolean equals(Object obj) {
-        Optional<LineImpl> other = ObjectsHelper.asClass(obj, LineImpl.class);
-        if (other.isPresent()) {
-            return Line.Helper.equals(this, other.get());
-        } else
-            return false;
+        return Line.Helper.equals(this, obj);
     }
 }

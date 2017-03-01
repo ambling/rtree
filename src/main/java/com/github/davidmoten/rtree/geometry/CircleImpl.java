@@ -75,10 +75,6 @@ public final class CircleImpl implements Circle {
 
     @Override
     public boolean equals(Object obj) {
-        Optional<CircleImpl> other = ObjectsHelper.asClass(obj, CircleImpl.class);
-        if (other.isPresent()) {
-            return Circle.Helper.equals(this, other.get());
-        } else
-            return false;
+        return Circle.Helper.equals(this, obj);
     }
 }

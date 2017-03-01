@@ -21,6 +21,7 @@ import com.github.davidmoten.rtree.SerializerHelper;
 import com.github.davidmoten.rtree.SplitterRStar;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.github.davidmoten.rtree.internal.ContextDefault;
 import com.github.davidmoten.rtree.internal.FactoryDefault;
 
 import rx.functions.Func0;
@@ -134,7 +135,7 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 	}
 
 	private static <T, S extends Geometry> Context<T, S> readContext(Input input) {
-		return new Context<T, S>(2, 4, new SelectorRStar(), new SplitterRStar(), FactoryDefault.<T, S>instance());
+		return new ContextDefault<T, S>(2, 4, new SelectorRStar(), new SplitterRStar(), FactoryDefault.<T, S>instance());
 	}
 
 	public static <T, S extends Geometry> Serializer<T, S> create(Func1<? super T, byte[]> serializer,

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.github.davidmoten.rtree.internal.ContextDefault;
 import org.junit.Test;
 
 import com.github.davidmoten.rtree.geometry.Geometries;
@@ -13,7 +14,7 @@ import com.github.davidmoten.rtree.internal.LeafDefault;
 
 public class LeafTest {
 
-    private static Context<Object, Rectangle> context = new Context<Object, Rectangle>(2, 4,
+    private static Context<Object, Rectangle> context = new ContextDefault<Object, Rectangle>(2, 4,
             new SelectorMinimalAreaIncrease(), new SplitterQuadratic(),
             Factories.<Object, Rectangle> defaultFactory());
 

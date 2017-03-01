@@ -1,44 +1,42 @@
 package com.github.davidmoten.rtree.fbs;
 
-import java.util.List;
-
-import com.github.davidmoten.rtree.Context;
+import com.github.davidmoten.guavamini.Preconditions;
+import com.github.davidmoten.rtree.Entries;
 import com.github.davidmoten.rtree.Entry;
 import com.github.davidmoten.rtree.Leaf;
 import com.github.davidmoten.rtree.Node;
 import com.github.davidmoten.rtree.fbs.generated.Box_;
 import com.github.davidmoten.rtree.fbs.generated.Node_;
-import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.internal.LeafHelper;
 import com.github.davidmoten.rtree.internal.NodeAndEntries;
-import com.google.flatbuffers.FlatBufferBuilder;
-
 import rx.Subscriber;
 import rx.functions.Func1;
 
-final class LeafFlatBuffers<T, S extends Geometry> implements Leaf<T, S> {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final Node_ node;
-    private final Context<T, S> context;
-    private final Func1<byte[],? extends T> deserializer;
+import static com.github.davidmoten.rtree.fbs.FlatBuffersHelper.parseObject;
+import static com.github.davidmoten.rtree.fbs.FlatBuffersHelper.toGeometry;
 
-    LeafFlatBuffers(List<Entry<T, S>> entries, Context<T, S> context,
-            Func1<? super T, byte[]> serializer, Func1<byte[],? extends T> deserializer) {
-        this(createNode(entries, serializer), context, deserializer);
-    }
+final class LeafFlatBuffers<T, S extends Geometry> implements Leaf<T, S>, ObjFlatBuffers{
 
-    LeafFlatBuffers(Node_ node, Context<T, S> context, Func1<byte[], ? extends T> deserializer) {
+    private final int offset;
+    private final ContextFlatBuffers<T, S> context;
+
+    LeafFlatBuffers(Node_ node, ContextFlatBuffers<T, S> context) {
         this.context = context;
-        this.deserializer = deserializer;
-        this.node = node;
+        this.offset = node.__getOffset();
     }
 
-    private static <T, S extends Geometry> Node_ createNode(List<Entry<T, S>> entries,
-            Func1<? super T, byte[]> serializer) {
-        FlatBufferBuilder builder = new FlatBufferBuilder(0);
-        builder.finish(FlatBuffersHelper.addEntries(entries, builder, serializer));
-        return Node_.getRootAsNode_(builder.dataBuffer());
+    @Override
+    public int offest() {
+        return offset;
+    }
+
+    @Override
+    public void set() {
+        context.node.__setOffset(offset);
     }
 
     @Override
@@ -57,34 +55,60 @@ final class LeafFlatBuffers<T, S extends Geometry> implements Leaf<T, S> {
         //only called when the root of the tree is a Leaf
         //normally the searchWithoutBackpressure is executed completely within the 
         //NonLeafFlatBuffers class to reduce object creation
-        LeafHelper.search(condition, subscriber, this);
+        set();
+        int numEntries = context.node.entriesLength();
+        for (int i = 0; i < numEntries; i++) {
+            if (subscriber.isUnsubscribed())
+                return;
+            // set entry
+            context.node.entries(context.entry, i);
+            // set geometry
+            context.entry.geometry(context.geometry);
+            final Geometry g = toGeometry(context.geometry);
+            if (condition.call(g)) {
+                T t = parseObject(context.factory().deserializer(), context.entry);
+                Entry<T, S> ent = Entries.entry(t, (S) g);
+                subscriber.onNext(ent);
+            }
+        }
     }
 
     @Override
     public int count() {
-        return node.entriesLength();
+        set();
+        return context.node.entriesLength();
     }
 
     @Override
-    public Context<T, S> context() {
+    public ContextFlatBuffers<T, S> context() {
         return context;
     }
 
     @Override
     public Geometry geometry() {
-        Box_ b = node.mbb();
-        // create on demand to reduce memory use (though not gc pressure)
-        return Geometries.rectangle(b.x1(), b.y1(), b.x2(), b.y2());
+        set();
+        return context.node.mbb();
     }
 
     @Override
     public List<Entry<T, S>> entries() {
-        return FlatBuffersHelper.createEntries(node, deserializer);
+        set();
+        int numEntries = context.node.entriesLength();
+        List<Entry<T, S>> entries = new ArrayList<Entry<T, S>>(numEntries);
+        Preconditions.checkArgument(numEntries > 0);
+        for (int i = 0; i < numEntries; i++) {
+            context.node.entries(context.entry, i);
+            Entry<T, S> ent = new EntryFlatBuffers<T, S>(context.entry, context);
+            entries.add(ent);
+        }
+        return entries;
     }
 
     @Override
     public Entry<T, S> entry(int i) {
-       return FlatBuffersHelper.createEntry(node, deserializer, i);
+        set();
+        context.node.entries(context.entry, i);
+        return new EntryFlatBuffers<T, S>(context.entry, context);
     }
 
 }

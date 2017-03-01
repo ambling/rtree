@@ -54,9 +54,14 @@ public interface Circle extends Geometry {
             return Objects.hashCode(c.x(), c.y(), c.radius());
         }
 
-        public static boolean equals(Circle c, Circle other) {
-            return Objects.equal(c.x(), other.x()) && Objects.equal(c.y(), other.y())
-                    && Objects.equal(c.radius(), other.radius());
+        public static boolean equals(Circle c, Object obj) {
+            if (obj instanceof Circle) {
+                Circle other = (Circle) obj;
+                return Objects.equal(c.x(), other.x())
+                        && Objects.equal(c.y(), other.y())
+                        && Objects.equal(c.radius(), other.radius());
+            } else
+                return false;
         }
 
         public static boolean intersects(Circle c, Point point) {

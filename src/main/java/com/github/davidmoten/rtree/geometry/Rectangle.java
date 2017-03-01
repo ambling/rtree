@@ -99,9 +99,13 @@ public interface Rectangle extends Geometry, HasGeometry {
             return Objects.hashCode(r.x1(), r.y1(), r.x2(), r.y2());
         }
 
-        public static boolean equals(Rectangle r, Rectangle other)  {
-            return Objects.equal(r.x1(), other.x1()) && Objects.equal(r.x2(), other.x2())
-                    && Objects.equal(r.y1(), other.y1()) && Objects.equal(r.y2(), other.y2());
+        public static boolean equals(Rectangle r, Object obj)  {
+            if (obj instanceof Rectangle) {
+                Rectangle other = (Rectangle) obj;
+                return Objects.equal(r.x1(), other.x1()) && Objects.equal(r.x2(), other.x2())
+                        && Objects.equal(r.y1(), other.y1()) && Objects.equal(r.y2(), other.y2());
+            } else
+                return false;
         }
     }
 

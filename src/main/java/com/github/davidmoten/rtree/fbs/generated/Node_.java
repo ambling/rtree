@@ -14,6 +14,11 @@ public final class Node_ extends Table {
   public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
   public Node_ __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  // added for manipulate the offset
+  public int __getOffset() { return bb_pos; }
+  public void __setOffset(int offset) { bb_pos = offset; }
+
+
   public Box_ mbb() { return mbb(new Box_()); }
   public Box_ mbb(Box_ obj) { int o = __offset(4); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
   public Node_ children(int j) { return children(new Node_(), j); }

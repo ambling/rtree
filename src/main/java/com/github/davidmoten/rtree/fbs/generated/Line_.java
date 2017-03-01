@@ -2,13 +2,14 @@
 
 package com.github.davidmoten.rtree.fbs.generated;
 
-import java.nio.*;
-import java.lang.*;
-import java.util.*;
+import com.github.davidmoten.rtree.geometry.Circle;
+import com.github.davidmoten.rtree.geometry.Line;
+import com.github.davidmoten.rtree.geometry.Point;
+import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.google.flatbuffers.FlatBufferBuilder;
+import com.google.flatbuffers.Struct;
 
-import com.github.davidmoten.rtree.geometry.*;
-import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
-import com.google.flatbuffers.*;
+import java.nio.ByteBuffer;
 
 @SuppressWarnings("unused")
 public final class Line_ extends Struct implements Line {
@@ -70,11 +71,7 @@ public final class Line_ extends Struct implements Line {
 
   @Override
   public boolean equals(Object obj) {
-    com.github.davidmoten.guavamini.Optional<Line_> other = ObjectsHelper.asClass(obj, Line_.class);
-    if (other.isPresent()) {
-      return Line.Helper.equals(this, other.get());
-    } else
-      return false;
+    return Line.Helper.equals(this, obj);
   }
 }
 

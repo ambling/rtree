@@ -14,6 +14,10 @@ public final class Entry_ extends Table {
   public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
   public Entry_ __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  // added for manipulate the offset
+  public int __getOffset() { return bb_pos; }
+  public void __setOffset(int offset) { bb_pos = offset; }
+
   public Geometry_ geometry() { return geometry(new Geometry_()); }
   public Geometry_ geometry(Geometry_ obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
   public byte object(int j) { int o = __offset(6); return o != 0 ? bb.get(__vector(o) + j * 1) : 0; }

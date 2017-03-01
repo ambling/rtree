@@ -139,10 +139,13 @@ public interface Line extends Geometry {
             return Objects.hashCode(l.x1(), l.y1(), l.x2(), l.y2());
         }
 
-        public static boolean equals(Line l, Line other) {
-            return Objects.equal(l.x1(), other.x1()) && Objects.equal(l.y1(), other.y1())
-                    && Objects.equal(l.x2(), other.x2()) && Objects.equal(l.y2(), other.y2());
-
+        public static boolean equals(Line l, Object obj) {
+            if (obj instanceof Line) {
+                Line other = (Line) obj;
+                return Objects.equal(l.x1(), other.x1()) && Objects.equal(l.y1(), other.y1())
+                        && Objects.equal(l.x2(), other.x2()) && Objects.equal(l.y2(), other.y2());
+            } else
+                return false;
         }
 
         private static final class Vector {

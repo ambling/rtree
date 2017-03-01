@@ -27,6 +27,8 @@ import com.github.davidmoten.rtree.fbs.generated.Tree_;
 import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.github.davidmoten.rtree.internal.ContextDefault;
+import com.github.davidmoten.rtree.internal.FactoryDefault;
 import com.github.davidmoten.rtree.internal.LeafDefault;
 import com.github.davidmoten.rtree.internal.NonLeafDefault;
 import com.google.flatbuffers.FlatBufferBuilder;
@@ -122,23 +124,25 @@ public final class SerializerFlatBuffers<T, S extends Geometry> implements Seria
             throws IOException {
         byte[] bytes = readFully(is, (int) sizeBytes);
         Tree_ t = Tree_.getRootAsTree_(ByteBuffer.wrap(bytes));
-        Context<T, S> context = new Context<T, S>(t.context().minChildren(),
+        ContextFlatBuffers<T, S> context = new ContextFlatBuffers<T, S>(t.context().minChildren(),
                 t.context().maxChildren(), new SelectorRStar(), new SplitterRStar(), factory);
-        Node_ node = t.root();
+        Node_ node = t.root(context.node);
         if (node == null) {
             return SerializerHelper.create(Optional.<Node<T, S>> absent(), 0, context);
         } else {
             final Node<T, S> root;
             if (structure == InternalStructure.SINGLE_ARRAY) {
                 if (node.childrenLength() > 0) {
-                    root = new NonLeafFlatBuffers<T, S>(node, context, factory.deserializer());
+                    root = new NonLeafFlatBuffers<T, S>(node, context);
                 } else {
-                    root = new LeafFlatBuffers<T, S>(node, context, factory.deserializer());
+                    root = new LeafFlatBuffers<T, S>(node, context);
                 }
+                return SerializerHelper.create(Optional.of(root), (int) t.size(), context);
             } else {
-                root = toNodeDefault(node, context, factory.deserializer());
+                Context<T, S> contextDefault = toContextDefault(context);
+                root = toNodeDefault(node, contextDefault, factory.deserializer());
+                return SerializerHelper.create(Optional.of(root), (int) t.size(), contextDefault);
             }
-            return SerializerHelper.create(Optional.of(root), (int) t.size(), context);
         }
     }
 
@@ -147,14 +151,23 @@ public final class SerializerFlatBuffers<T, S extends Geometry> implements Seria
         int numChildren = node.childrenLength();
         if (numChildren > 0) {
             List<Node<T, S>> children = new ArrayList<Node<T, S>>(numChildren);
+            Node_ child = new Node_();
             for (int i = 0; i < numChildren; i++) {
-                children.add(toNodeDefault(node.children(i), context, deserializer));
+                node.children(child, i);
+                children.add(toNodeDefault(child, context, deserializer));
             }
             return new NonLeafDefault<T, S>(children, context);
         } else {
             List<Entry<T, S>> entries = FlatBuffersHelper.createEntries(node, deserializer);
             return new LeafDefault<T, S>(entries, context);
         }
+    }
+
+    private static <T, S extends Geometry> Context<T, S> toContextDefault(
+            ContextFlatBuffers<T, S> context) {
+        return new ContextDefault<T, S>(context.minChildren(),
+                context.maxChildren(), context.selector(),
+                context.splitter(), new FactoryDefault<T, S>());
     }
 
     @VisibleForTesting

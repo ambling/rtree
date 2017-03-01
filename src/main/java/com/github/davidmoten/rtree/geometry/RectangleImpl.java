@@ -113,10 +113,6 @@ final class RectangleImpl implements Rectangle {
 
     @Override
     public boolean equals(Object obj) {
-        Optional<RectangleImpl> other = ObjectsHelper.asClass(obj, RectangleImpl.class);
-        if (other.isPresent()) {
-            return Rectangle.Helper.equals(this, other.get());
-        } else
-            return false;
+        return Rectangle.Helper.equals(this, obj);
     }
 }

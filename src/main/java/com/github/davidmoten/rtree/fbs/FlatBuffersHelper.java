@@ -108,7 +108,7 @@ final class FlatBuffersHelper {
             Func1<byte[], ? extends T> deserializer, Entry_ entry, Geometry_ geom, int i) {
         node.entries(entry, i);
         entry.geometry(geom);
-        final Geometry g = toGeometry(geom);
+        final Geometry g = toGeometryDefault(geom);
         return Entries.entry(parseObject(deserializer, entry), (S) g);
     }
 
@@ -129,7 +129,7 @@ final class FlatBuffersHelper {
     }
 
     @SuppressWarnings("unchecked")
-    static <S extends Geometry> S toGeometry(Geometry_ g) {
+    static <S extends Geometry> S toGeometryDefault(Geometry_ g) {
         final Geometry result;
         byte type = g.type();
         if (type == GeometryType_.Box) {
@@ -147,11 +147,26 @@ final class FlatBuffersHelper {
         return (S) result;
     }
 
+    @SuppressWarnings("unchecked")
+    static <S extends Geometry> S toGeometry(Geometry_ geometry) {
+        byte type = geometry.type();
+        if (type == GeometryType_.Box) {
+            return (S) geometry.box();
+        } else if (type == GeometryType_.Point) {
+            return (S) geometry.point();
+        } else if (type == GeometryType_.Circle) {
+            return (S) geometry.circle();
+        } else if (type == GeometryType_.Line) {
+            return (S) geometry.line();
+        } else
+            throw new RuntimeException("unexpected");
+    }
+
     static Rectangle createBox(Box_ b) {
         return Geometries.rectangle(b.x1(), b.y1(), b.x2(), b.y2());
     }
 
-    static Line createLine(Box_ b) {
+    static Line createLine(Line_ b) {
         return Geometries.line(b.x1(), b.y1(), b.x2(), b.y2());
     }
 

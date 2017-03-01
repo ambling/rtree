@@ -21,8 +21,8 @@ public final class Geometry_ extends Table {
   public Point_ point(Point_ obj) { int o = __offset(8); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
   public Circle_ circle() { return circle(new Circle_()); }
   public Circle_ circle(Circle_ obj) { int o = __offset(10); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
-  public Box_ line() { return line(new Box_()); }
-  public Box_ line(Box_ obj) { int o = __offset(12); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
+  public Line_ line() { return line(new Line_()); }
+  public Line_ line(Line_ obj) { int o = __offset(12); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
 
   public static void startGeometry_(FlatBufferBuilder builder) { builder.startObject(5); }
   public static void addType(FlatBufferBuilder builder, byte type) { builder.addByte(0, type, 0); }

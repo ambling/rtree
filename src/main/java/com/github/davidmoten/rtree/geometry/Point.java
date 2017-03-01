@@ -1,5 +1,7 @@
 package com.github.davidmoten.rtree.geometry;
 
+import com.github.davidmoten.guavamini.Objects;
+
 public interface Point extends Rectangle {
 
     public abstract float x();
@@ -47,18 +49,11 @@ public interface Point extends Rectangle {
         }
 
         public static boolean equals(Point p0, Object obj) {
-            if (p0 == obj)
-                return true;
-            if (obj == null)
+            if (obj instanceof Point) {
+                Point other = (Point) obj;
+                return Objects.equal(p0.x(), other.x()) && Objects.equal(p0.y(), other.y());
+            } else
                 return false;
-            if (p0.getClass() != obj.getClass())
-                return false;
-            Point other = (Point) obj;
-            if (Float.floatToIntBits(p0.x()) != Float.floatToIntBits(other.x()))
-                return false;
-            if (Float.floatToIntBits(p0.y()) != Float.floatToIntBits(other.y()))
-                return false;
-            return true;
         }
 
         public static String toString(Point p0) {

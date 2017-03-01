@@ -16,6 +16,7 @@ import com.github.davidmoten.rtree.geometry.Line;
 import com.github.davidmoten.rtree.geometry.Point;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.internal.Comparators;
+import com.github.davidmoten.rtree.internal.ContextDefault;
 import com.github.davidmoten.rtree.internal.NodeAndEntries;
 import com.github.davidmoten.rtree.internal.RTreeDefault;
 import com.github.davidmoten.rtree.internal.operators.OperatorBoundedPriorityQueue;
@@ -313,7 +314,7 @@ public abstract class RTree<T, S extends Geometry> {
             if (!minChildren.isPresent())
                 minChildren = of((int) Math.round(maxChildren.get() * DEFAULT_FILLING_FACTOR));
             return new RTreeDefault<T, S>(Optional.<Node<T, S>> absent(), 0,
-                    new Context<T, S>(minChildren.get(), maxChildren.get(), selector, splitter,
+                    new ContextDefault<T, S>(minChildren.get(), maxChildren.get(), selector, splitter,
                             (Factory<T, S>) factory));
         }
 

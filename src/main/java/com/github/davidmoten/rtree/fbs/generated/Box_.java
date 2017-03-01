@@ -87,11 +87,7 @@ public final class Box_ extends Struct implements Rectangle {
 
   @Override
   public boolean equals(Object obj) {
-    com.github.davidmoten.guavamini.Optional<Box_> other = ObjectsHelper.asClass(obj, Box_.class);
-    if (other.isPresent()) {
-      return Rectangle.Helper.equals(this, other.get());
-    } else
-      return false;
+    return Rectangle.Helper.equals(this, obj);
   }
 }
 

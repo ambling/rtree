@@ -69,11 +69,7 @@ public final class Circle_ extends Struct implements Circle {
 
   @Override
   public boolean equals(Object obj) {
-    com.github.davidmoten.guavamini.Optional<Circle_> other = ObjectsHelper.asClass(obj, Circle_.class);
-    if (other.isPresent()) {
-      return Circle.Helper.equals(this, other.get());
-    } else
-      return false;
+    return Circle.Helper.equals(this, obj);
   }
 }
 
