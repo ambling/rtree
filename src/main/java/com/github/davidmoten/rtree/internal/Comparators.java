@@ -101,4 +101,23 @@ public final class Comparators {
         };
     }
 
+    /**
+     * <p>
+     * Returns a comparator that can be used to sort objects with geometry (implement HasGeometry)
+     * returned by search methods.
+     * </p>
+     *
+     * @param r
+     *            rectangle to measure distance to
+     * @return a comparator to sort by ascending distance from the rectangle
+     */
+    public static Comparator<HasGeometry> ascendingGeometryDistance(final Rectangle r) {
+        return new Comparator<HasGeometry>() {
+            @Override
+            public int compare(HasGeometry g1, HasGeometry g2) {
+                return Double.compare(g1.geometry().distance(r), g2.geometry().distance(r));
+            }
+        };
+    }
+
 }

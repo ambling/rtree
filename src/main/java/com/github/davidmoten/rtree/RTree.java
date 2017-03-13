@@ -23,6 +23,7 @@ import com.github.davidmoten.rtree.internal.Comparators;
 import com.github.davidmoten.rtree.internal.NodeAndEntries;
 import com.github.davidmoten.rtree.internal.operators.OperatorBoundedPriorityQueue;
 
+import rx.Emitter;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -812,6 +813,9 @@ public final class RTree<T, S extends Geometry> {
      * Returns the nearest k entries (k=maxCount) to the given rectangle where
      * the entries are strictly less than a given maximum distance from the
      * rectangle.
+     *
+     * Note that This method applies the best-first search algorithms, which operates on a
+     * priority queue that may be memory inefficient, and dose not support Backpressure yet.
      * 
      * @param r
      *            rectangle
@@ -823,14 +827,18 @@ public final class RTree<T, S extends Geometry> {
      */
     public Observable<Entry<T, S>> nearest(final Rectangle r, final double maxDistance,
             int maxCount) {
-        return search(r, maxDistance).lift(new OperatorBoundedPriorityQueue<Entry<T, S>>(maxCount,
-                Comparators.<T, S> ascendingDistance(r)));
+        if (root.isPresent())
+            return Observable.fromEmitter(
+                    new NearestEmitter<T, S>(root.get(), r, maxDistance, maxCount),
+                    Emitter.BackpressureMode.BUFFER);
+        else
+            return Observable.empty();
     }
 
     /**
      * Returns the nearest k entries (k=maxCount) to the given point where the
      * entries are strictly less than a given maximum distance from the point.
-     * 
+     *
      * @param p
      *            point
      * @param maxDistance
@@ -841,6 +849,39 @@ public final class RTree<T, S extends Geometry> {
      */
     public Observable<Entry<T, S>> nearest(final Point p, final double maxDistance, int maxCount) {
         return nearest(p.mbr(), maxDistance, maxCount);
+    }
+
+    /**
+     * A brute force method to search nearest k entries (k=maxCount) to the given rectangle.
+     *
+     * @param r
+     *            rectangle
+     * @param maxDistance
+     *            max distance of returned entries from the rectangle
+     * @param maxCount
+     *            max number of entries to return
+     * @return nearest entries to maxCount, in ascending order of distance
+     */
+    public Observable<Entry<T, S>> nearestBrute(final Rectangle r, final double maxDistance,
+                                           int maxCount) {
+        return search(r, maxDistance).lift(new OperatorBoundedPriorityQueue<Entry<T, S>>(maxCount,
+                Comparators.<T, S> ascendingDistance(r)));
+    }
+
+    /**
+     * Returns the nearest k entries (k=maxCount) to the given point where the
+     * entries are strictly less than a given maximum distance from the point.
+     *
+     * @param p
+     *            point
+     * @param maxDistance
+     *            max distance of returned entries from the point
+     * @param maxCount
+     *            max number of entries to return
+     * @return nearest entries to maxCount, in ascending order of distance
+     */
+    public Observable<Entry<T, S>> nearestBrute(final Point p, final double maxDistance, int maxCount) {
+        return nearestBrute(p.mbr(), maxDistance, maxCount);
     }
 
     /**

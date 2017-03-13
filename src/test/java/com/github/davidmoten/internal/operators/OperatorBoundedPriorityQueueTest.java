@@ -201,7 +201,7 @@ public class OperatorBoundedPriorityQueueTest {
         for (int i = 0; i < 5; ++i) {
             tree = tree.add(String.format("Hello %d", i), Geometries.line(-i, -i, 5 + i, i));
         }
-        tree.nearest(Geometries.point(2, 0.4), Double.MAX_VALUE, 1).toBlocking().single();
+        tree.nearestBrute(Geometries.point(2, 0.4), Double.MAX_VALUE, 1).toBlocking().single();
     }
 
 }
