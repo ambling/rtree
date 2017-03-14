@@ -6,6 +6,7 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.internal.Comparators;
 import com.github.davidmoten.rtree.internal.util.PriorityQueue;
 import rx.Emitter;
+import rx.Subscription;
 import rx.functions.Action1;
 
 import java.util.Comparator;
@@ -31,12 +32,18 @@ final class NearestEmitter<T, S extends Geometry> implements Action1<Emitter<Ent
      * Best-first search of k nearest neighbor query on RTree
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void call(Emitter<Entry<T, S>> entryEmitter) {
+        // TODO this method is very tricky, but we have no other method yet
+        // to get the subscription status from emitter.
+        // Maybe we have to use other method to create the Observerable than `fromEmitter`
+        Subscription subscription = (Subscription) entryEmitter;
+
         Comparator<HasGeometry> comparator = Comparators.ascendingGeometryDistance(rect);
         PriorityQueue<HasGeometry> queue = new PriorityQueue<HasGeometry>(comparator);
         queue.add(node);
         int found = 0;
-        while (!queue.isEmpty() && found < maxCount) {
+        while (!queue.isEmpty() && found < maxCount && !subscription.isUnsubscribed()) {
             HasGeometry next = queue.poll();
             if (next instanceof NonLeaf) {
                 NonLeaf<T, S> nonLeaf = (NonLeaf<T, S>) next;
