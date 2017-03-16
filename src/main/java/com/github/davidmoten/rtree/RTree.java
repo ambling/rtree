@@ -411,10 +411,10 @@ public final class RTree<T, S extends Geometry> {
 
             @Override
             public int compare(HasGeometry o1, HasGeometry o2) {
-                return Float.compare(mid(o1), mid(o2));
+                return Double.compare(mid(o1), mid(o2));
             }
 
-            private float mid(HasGeometry o) {
+            private double mid(HasGeometry o) {
                 Rectangle mbr = o.geometry().mbr();
                 if (dimension == 0) return (mbr.x1() + mbr.x2()) / 2;
                 else return (mbr.y1() + mbr.y2()) / 2;

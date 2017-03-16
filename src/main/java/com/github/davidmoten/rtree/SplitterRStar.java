@@ -20,9 +20,9 @@ public final class SplitterRStar implements Splitter {
             @Override
             public int compare(ListPair<?> p1, ListPair<?> p2) {
                 //check overlap first then areaSum
-                int value = Float.compare(overlap(p1), overlap(p2));
+                int value = Double.compare(overlap(p1), overlap(p2));
                 if (value == 0) {
-                    return Float.compare(p1.areaSum(), p2.areaSum());
+                    return Double.compare(p1.areaSum(), p2.areaSum());
                 } else {
                     return value;
                 }
@@ -41,7 +41,7 @@ public final class SplitterRStar implements Splitter {
         // the list with the least S is then used to find minimum overlap
 
         List<ListPair<T>> pairs = null;
-        float lowestMarginSum = Float.MAX_VALUE;
+        double lowestMarginSum = Double.MAX_VALUE;
         List<T> list = null;
         for (SortType sortType : SortType.values()) {
             if (list == null) {
@@ -49,7 +49,7 @@ public final class SplitterRStar implements Splitter {
             }
             Collections.sort(list, comparator(sortType));
             List<ListPair<T>> p = getPairs(minSize, list);
-            float marginSum = marginValueSum(p);
+            double marginSum = marginValueSum(p);
             if (marginSum < lowestMarginSum) {
                 lowestMarginSum = marginSum;
                 pairs = p;
@@ -80,8 +80,8 @@ public final class SplitterRStar implements Splitter {
         X_LOWER, X_UPPER, Y_LOWER, Y_UPPER;
     }
 
-    private static <T extends HasGeometry> float marginValueSum(List<ListPair<T>> list) {
-        float sum = 0;
+    private static <T extends HasGeometry> double marginValueSum(List<ListPair<T>> list) {
+        double sum = 0;
         for (ListPair<T> p : list)
             sum += p.marginSum();
         return sum;
@@ -106,7 +106,7 @@ public final class SplitterRStar implements Splitter {
 
         @Override
         public int compare(HasGeometry n1, HasGeometry n2) {
-            return Float.compare(n1.geometry().mbr().x1(), n2.geometry().mbr().x1());
+            return Double.compare(n1.geometry().mbr().x1(), n2.geometry().mbr().x1());
         }
     };
 
@@ -114,7 +114,7 @@ public final class SplitterRStar implements Splitter {
 
         @Override
         public int compare(HasGeometry n1, HasGeometry n2) {
-            return Float.compare(n1.geometry().mbr().x2(), n2.geometry().mbr().x2());
+            return Double.compare(n1.geometry().mbr().x2(), n2.geometry().mbr().x2());
         }
     };
 
@@ -122,7 +122,7 @@ public final class SplitterRStar implements Splitter {
 
         @Override
         public int compare(HasGeometry n1, HasGeometry n2) {
-            return Float.compare(n1.geometry().mbr().y1(), n2.geometry().mbr().y1());
+            return Double.compare(n1.geometry().mbr().y1(), n2.geometry().mbr().y1());
         }
     };
 
@@ -130,11 +130,11 @@ public final class SplitterRStar implements Splitter {
 
         @Override
         public int compare(HasGeometry n1, HasGeometry n2) {
-            return Float.compare(n1.geometry().mbr().y2(), n2.geometry().mbr().y2());
+            return Double.compare(n1.geometry().mbr().y2(), n2.geometry().mbr().y2());
         }
     };
 
-    private static float overlap(ListPair<? extends HasGeometry> pair) {
+    private static double overlap(ListPair<? extends HasGeometry> pair) {
         return pair.group1().geometry().mbr()
                 .intersectionArea(pair.group2().geometry().mbr());
     }

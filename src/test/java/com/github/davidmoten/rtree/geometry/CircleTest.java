@@ -69,7 +69,7 @@ public class CircleTest {
     @Test
     public void testHashCode() {
         Circle circle = circle(1, 2, 3);
-        assertEquals(1606448223, circle.hashCode());
+        assertEquals(66614367, circle.hashCode());
     }
 
     @Test

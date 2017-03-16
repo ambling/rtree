@@ -74,7 +74,7 @@ public class PointTest {
 	@Test
 	public void testHashCode() {
 		Point p = Geometries.point(1, 2);
-		assertEquals(-260045887, p.hashCode());
+		assertEquals(-32504895, p.hashCode());
 	}
 
 	@Test
