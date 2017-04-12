@@ -30,23 +30,26 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 
 	private final Func1<? super T, byte[]> serializer;
 	private final Func1<byte[], ? extends T> deserializer;
-	private final Func0<Kryo> kryoFactory;
+	private final Kryo kryo;
 
 	public SerializerKryo(Func1<? super T, byte[]> serializer, Func1<byte[], ? extends T> deserializer,
 			Func0<Kryo> kryoFactory) {
 		this.serializer = serializer;
 		this.deserializer = deserializer;
-		this.kryoFactory = kryoFactory;
+		this.kryo = kryoFactory.call();
+	}
+
+	public Kryo kryo() {
+		return kryo;
 	}
 
 	@Override
 	public void write(RTree<T, S> tree, OutputStream os) throws IOException {
 		Output output = new Output(os);
-		Kryo kryo = kryoFactory.call();
-		write(kryo, output, tree);
+		write(output, tree);
 	}
 
-	private void write(Kryo kryo, Output output, RTree<T, S> tree) {
+    public void write(Output output, RTree<T, S> tree) {
 		writeContext(tree.context(), output);
 		output.writeBoolean(tree.root().isPresent());
 		output.writeInt(tree.size());
@@ -55,7 +58,7 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 		}
 	}
 
-	private void writeNode(Node<T, S> node, Output output) {
+    public void writeNode(Node<T, S> node, Output output) {
 		boolean isLeaf = node instanceof Leaf;
 		output.writeBoolean(isLeaf);
 		if (isLeaf) {
@@ -77,7 +80,7 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 		}
 	}
 
-	private void writeValue(Output output, T t) {
+	public void writeValue(Output output, T t) {
 		byte[] bytes = serializer.call(t);
 		output.write(bytes.length);
 		output.write(bytes);
@@ -89,7 +92,7 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 		writeBounds(output, r);
 	}
 
-	private void writeGeometry(Output output, S g) {
+	public void writeGeometry(Output output, S g) {
 		if (g instanceof Rectangle) {
 			writeRectangle(output, g);
 		} else {
@@ -97,14 +100,14 @@ public class SerializerKryo<T, S extends Geometry> implements Serializer<T, S> {
 		}
 	}
 
-	private void writeBounds(Output output, Rectangle mbr) {
+	public void writeBounds(Output output, Rectangle mbr) {
 		output.writeFloat(mbr.x1());
 		output.writeFloat(mbr.y1());
 		output.writeFloat(mbr.y1());
 		output.writeFloat(mbr.y2());
 	}
 
-	private void writeContext(Context<T, S> context, Output output) {
+    public void writeContext(Context<T, S> context, Output output) {
 		output.writeInt(context.minChildren());
 		output.writeInt(context.maxChildren());
 	}
