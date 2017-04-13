@@ -75,12 +75,6 @@ public final class Serializers {
         private Func1<? super T, byte[]> serializer;
         private Func1<byte[], ? extends T> deserializer;
         private Method method;
-        private Func0<Kryo> kryoFactory = new Func0<Kryo>() {
-            @Override
-            public Kryo call() {
-                return new Kryo();
-            }
-        };
 
         private SerializerTypedBuilder(Func1<? super T, byte[]> serializer,
                 Func1<byte[], ? extends T> deserializer, Method method) {
@@ -108,9 +102,8 @@ public final class Serializers {
         }
 
         // TODO enable when ready
-        private SerializerTypedBuilder<T> kryo(Func0<Kryo> kryoFactory) {
+        private SerializerTypedBuilder<T> kryo() {
             this.method = Method.KRYO;
-            this.kryoFactory = kryoFactory;
             return this;
         }
 
@@ -125,7 +118,7 @@ public final class Serializers {
                 }
                 return SerializerFlatBuffers.create(serializer, deserializer);
             } else {
-                return SerializerKryo.create(serializer, deserializer, kryoFactory);
+                return SerializerKryo.create(serializer, deserializer);
             }
         }
 
