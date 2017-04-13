@@ -1,43 +1,39 @@
 package com.github.davidmoten.rtree.kv;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoSerializable;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.github.davidmoten.rtree.Context;
 import com.github.davidmoten.rtree.Entry;
 import com.github.davidmoten.rtree.Node;
 import com.github.davidmoten.rtree.NonLeaf;
-import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
+import com.github.davidmoten.rtree.geometry.HasGeometry;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.internal.NodeAndEntries;
-import com.github.davidmoten.rtree.kryo.SerializerKryo;
+import com.github.davidmoten.rtree.internal.NonLeafHelper;
+import com.github.davidmoten.rtree.internal.Util;
 import rx.Subscriber;
 import rx.functions.Func1;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * The non-leaf RTree node that is managed in a KVStore.
  */
-public final class NonLeafOnKV<T, S extends Geometry> implements NonLeaf<T, S> {
+public final class NonLeafOnKV<T, S extends Geometry> implements NodeOnKV<T, S>, NonLeaf<T, S> {
 
     private final String key;
-    private final KVStore kvStore;
+    private final KVStore<T, S> kvStore;
     private final List<Child> children;
     private final Rectangle mbr;
     private final Context<T, S> context;
-    private final SerializerKryo<T, S> serializer;
 
-    public NonLeafOnKV(String key, KVStore kvStore, Context<T, S> context, SerializerKryo<T, S> serializer) {
+    NonLeafOnKV(String key, KVStore<T, S> kvStore, List<Child> children, Context<T, S> context) {
         this.key = key;
         this.kvStore = kvStore;
+        this.children = children;
         this.context = context;
-        this.serializer = serializer;
-        String nodeData = kvStore.get(key);
-        nodeData.getBytes()
+        this.mbr = Util.mbr(children);
     }
 
     @Override
@@ -47,57 +43,89 @@ public final class NonLeafOnKV<T, S extends Geometry> implements NonLeaf<T, S> {
 
     @Override
     public Node<T, S> child(int i) {
-        return null;
+        return kvStore.getNode(children.get(i).key);
     }
 
     @Override
     public List<Node<T, S>> children() {
-        return null;
+        List<Node<T, S>> nodes = new ArrayList<Node<T, S>>(count());
+        for (Child child: children) {
+            nodes.add(kvStore.getNode(child.key));
+        }
+        return nodes;
     }
 
+    /**
+     * Note: modification of RTree may lead to redundant data in underlying KV store due to the immutability.
+     */
     @Override
     public List<Node<T, S>> add(Entry<? extends T, ? extends S> entry) {
-        return null;
+
+        if (!(entry instanceof EntryOnKV && kvStore == ((EntryOnKV) entry).kvStore))
+            entry = context.factory().createEntry(entry.value(), entry.geometry());
+        return NonLeafHelper.add(entry, this);
     }
 
+    /**
+     * Note: modification of RTree may lead to redundant data in underlying KV store due to the immutability.
+     */
     @Override
     public NodeAndEntries<T, S> delete(Entry<? extends T, ? extends S> entry, boolean all) {
-        return null;
+        return NonLeafHelper.delete(entry, all, this);
     }
 
+    /**
+     * Save some creation of children nodes.
+     */
     @Override
-    public void searchWithoutBackpressure(Func1<? super Geometry, Boolean> criterion, Subscriber<? super Entry<T, S>> subscriber) {
+    public void searchWithoutBackpressure(Func1<? super Geometry, Boolean> criterion,
+                                          Subscriber<? super Entry<T, S>> subscriber) {
+        if (!criterion.call(mbr)) return;
 
+        for (int i = 0; i < count(); i++) {
+            if (subscriber.isUnsubscribed()) {
+                return;
+            } else {
+                Child child = children.get(i);
+                if (criterion.call(child.mbr))
+                    kvStore.getNode(child.key).searchWithoutBackpressure(criterion, subscriber);
+            }
+        }
     }
 
     @Override
     public int count() {
-        return 0;
+        return children == null ? 0 : children.size();
     }
 
     @Override
     public Context<T, S> context() {
-        return null;
+        return context;
     }
 
-    public final class Child implements KryoSerializable {
+    @Override
+    public KVStore<T, S> kvStore() {
+        return kvStore;
+    }
 
-        private Rectangle mbr;
-        private String key;
+    @Override
+    public String key() {
+        return key;
+    }
 
-        @Override
-        public void write(Kryo kryo, Output output) {
-            output.writeFloat(mbr.x1());
-            output.writeFloat(mbr.y1());
-            output.writeFloat(mbr.y1());
-            output.writeFloat(mbr.y2());
-            output.writeAscii(key);
+    final static class Child implements HasGeometry {
+
+        Rectangle mbr;
+        String key;
+
+        Child(Rectangle mbr, String key) {
+            this.mbr = mbr;
+            this.key = key;
         }
 
         @Override
-        public void read(Kryo kryo, Input input) {
-            key = input.readString();
-            mbr = Geometries.rectangle(input.readFloat(), input.readFloat(), input.readFloat(), input.readFloat());
+        public Geometry geometry() {
+            return mbr;
         }
     }
 }
