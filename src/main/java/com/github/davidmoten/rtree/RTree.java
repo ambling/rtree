@@ -87,7 +87,7 @@ public final class RTree<T, S extends Geometry> {
         this(of(root), size, context);
     }
 
-    static <T, S extends Geometry> RTree<T, S> create(Optional<? extends Node<T, S>> root, int size,
+    public static <T, S extends Geometry> RTree<T, S> create(Optional<? extends Node<T, S>> root, int size,
             Context<T, S> context) {
         return new RTree<T, S>(root, size, context);
     }

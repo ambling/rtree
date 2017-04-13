@@ -4,7 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import com.github.davidmoten.rtree.kryo.SerializerKryo;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -17,19 +20,21 @@ import com.github.davidmoten.rtree.geometry.Point;
 public class KryoSerializationTest {
 
     @Test
-    @Ignore
     public void testRTree() {
-        Kryo kryo = new Kryo();
+        Serializer<String, Point> serializer = SerializerKryo.create(null, null);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        Output output = new Output(bytes);
         RTree<String, Point> tree = RTree.<String, Point> create()
                 .add(Entries.entry("thing", Geometries.point(10, 20)))
                 .add(Entries.entry("monster", Geometries.point(23, 45)));
-        kryo.writeObject(output, tree);
-        output.close();
-        Input input = new Input(new ByteArrayInputStream(bytes.toByteArray()));
-        RTree<String, Point> tree2 = kryo.readObject(input, RTree.class);
-        assertEquals(2, (int) tree2.entries().count().toBlocking().single());
+        try {
+            serializer.write(tree, bytes);
+            InputStream input = new ByteArrayInputStream(bytes.toByteArray());
+            RTree<String, Point> tree2 = serializer.read(input, 0, null);
+            System.out.println("kryo deserialized: " + tree2.asString());
+            assertEquals(2, (int) tree2.entries().count().toBlocking().single());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
