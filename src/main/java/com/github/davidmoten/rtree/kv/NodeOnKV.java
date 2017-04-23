@@ -6,4 +6,6 @@ import com.github.davidmoten.rtree.geometry.Geometry;
 public interface NodeOnKV<T, S extends Geometry> extends Node<T, S> {
     KVStore<T, S> kvStore();
     String key();
+//    String asString();
+//    Node<T, S> fromString(String s);
 }

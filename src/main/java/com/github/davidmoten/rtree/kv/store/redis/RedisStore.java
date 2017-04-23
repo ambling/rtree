@@ -14,54 +14,58 @@ import java.io.Serializable;
  */
 public class RedisStore<T, S extends Geometry> implements KVStore<T, S> {
 
+    private int size;
+    private int nodeCount;
+    private int dataCount
     private String dataName;
+    private Context<T, S> context;
+    private String rootKey;
     private final Jedis jedis;
 
     public RedisStore(String host, String dataName) {
         this.dataName = dataName;
         jedis = new Jedis(host);
     }
+
     @Override
     public String rootKey() {
-        return jedis.get(RedisUtil.redisKey(dataName, RedisUtil.ROOT_NAME));
+        return rootKey;
     }
 
     @Override
     public void setRootKey(String key) {
-        jedis.set(RedisUtil.redisKey(dataName, RedisUtil.ROOT_NAME), key);
+        rootKey = key;
     }
 
     @Override
-    public void setSize(int size) {
-        jedis.set(RedisUtil.redisKey(dataName, RedisUtil.SIZE),
-                  RedisUtil.toString(size));
+    public void setSize(int size) { // tree size
+        this.size = size;
     }
 
     @Override
     public int getSize() {
-        return jedis.get(RedisUtil.redisKey(dataName, RedisUtil.SIZE));
+        return size;
     }
-
     @Override
     public void setContext(Context<T, S> context) {
-        jedis.set(RedisUtil.redisKey(dataName, RedisUtil.CONTEXT),
-                  RedisUtil.toString(context));
+        this.context = context;
     }
 
     @Override
     public Context<T, S> getContext() {
-        return (Context<T, S>) RedisUtil.fromString(jedis.get(RedisUtil.redisKey(dataName, RedisUtil.CONTEXT)));
+        return context;
     }
 
     @Override
     public int getNodeCnt() {
-        return (int) RedisUtil.fromString(jedis.get(RedisUtil.redisKey(dataName, RedisUtil.NODE_COUNT)));
+        return nodeCount;
     }
 
     @Override
     public void putNode(String key, NodeOnKV<T , S> node) {
-        String serializedNode = RedisUtil.toString(node);
-        jedis.put(RedisUtil.redisKey(dataName, serializedNode));
+        String serializedNode = RedisUtil.toString(node); // serializable string
+        jedis.set(RedisUtil.redisKey(dataName, key), serializedNode);
+        nodeCount++;
     }
 
     @Override
@@ -71,12 +75,13 @@ public class RedisStore<T, S extends Geometry> implements KVStore<T, S> {
 
     @Override
     public int getDataCnt() {
-        return (int) RedisUtil.fromString(jedis.get(RedisUtil.redisKey(dataName, RedisUtil.DATA_COUNT)));
+        return dataCount;
     }
 
     @Override
     public void putData(String key, T value) {
         jedis.set(RedisUtil.redisKey(dataName, key), RedisUtil.toString(value));
+        dataCount++;
     }
 
     @Override

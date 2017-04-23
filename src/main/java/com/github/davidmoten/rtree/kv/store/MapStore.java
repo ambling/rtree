@@ -38,7 +38,7 @@ public class MapStore<T, S extends Geometry> implements KVStore<T, S> {
     }
 
     @Override
-    public void setSize(int size) {
+    public void setSize(int size) { // tree size
         this.size = size;
     }
 
