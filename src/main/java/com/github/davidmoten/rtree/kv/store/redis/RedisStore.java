@@ -16,7 +16,7 @@ public class RedisStore<T, S extends Geometry> implements KVStore<T, S> {
 
     private int size;
     private int nodeCount;
-    private int dataCount
+    private int dataCount;
     private String dataName;
     private Context<T, S> context;
     private String rootKey;
