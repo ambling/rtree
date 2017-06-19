@@ -124,15 +124,15 @@ public class LatLongExampleTest {
 
     private static class GeoCircleValue<T> {
 
-        GeoCircleValue(float lat, float lon, double radiusKm, T value) {
+        GeoCircleValue(double lat, double lon, double radiusKm, T value) {
             this.lat = lat;
             this.lon = lon;
             this.radiusKm = radiusKm;
             this.value = value;
         }
 
-        float lat;
-        float lon;
+        double lat;
+        double lon;
         double radiusKm;
         T value;
     }

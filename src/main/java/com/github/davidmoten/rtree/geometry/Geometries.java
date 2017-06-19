@@ -40,14 +40,13 @@ public final class Geometries {
         return Line.create(x1, y1, x2, y2);
     }
 
-    public static Rectangle rectangleGeographic(double lon1, double lat1, double lon2,
-            double lat2) {
-        return rectangleGeographic((float) lon1, (float) lat1, (float) lon2, (float) lat2);
+    public static Rectangle rectangleGeographic(float lon1, float lat1, float lon2, float lat2) {
+        return rectangleGeographic((double) lon1, (double) lat1, (double) lon2, (double) lat2);
     }
 
-    public static Rectangle rectangleGeographic(float lon1, float lat1, float lon2, float lat2) {
-        float x1 = normalizeLongitude(lon1);
-        float x2 = normalizeLongitude(lon2);
+    public static Rectangle rectangleGeographic(double lon1, double lat1, double lon2, double lat2) {
+        double x1 = normalizeLongitude(lon1);
+        double x2 = normalizeLongitude(lon2);
         if (x2 < x1) {
             x2 += 360;
         }
@@ -59,17 +58,17 @@ public final class Geometries {
     }
 
     @VisibleForTesting
-    static double normalizeLongitude(double d) {
-        return normalizeLongitude((float) d);
+    static double normalizeLongitude(float d) {
+        return normalizeLongitude((double) d);
     }
 
-    private static float normalizeLongitude(float d) {
+    private static double normalizeLongitude(double d) {
         if (d == -180.0f)
             return -180.0f;
         else {
-            float sign = Math.signum(d);
-            float x = Math.abs(d) / 360;
-            float x2 = (x - (float) Math.floor(x)) * 360;
+            double sign = Math.signum(d);
+            double x = Math.abs(d) / 360;
+            double x2 = (x - (double) Math.floor(x)) * 360;
             if (x2 >= 180)
                 x2 -= 360;
             return x2 * sign;

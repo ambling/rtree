@@ -8,33 +8,33 @@ import com.github.davidmoten.rtree.internal.util.ObjectsHelper;
 
 public final class Circle implements Geometry {
 
-    private final float x, y, radius;
+    private final double x, y, radius;
     private final Rectangle mbr;
 
-    protected Circle(float x, float y, float radius) {
+    protected Circle(double x, double y, double radius) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.mbr = RectangleImpl.create(x - radius, y - radius, x + radius, y + radius);
     }
 
-    static Circle create(double x, double y, double radius) {
-        return new Circle((float) x, (float) y, (float) radius);
+    static Circle create(float x, float y, float radius) {
+        return new Circle((double) x, (double) y, (double) radius);
     }
 
-    static Circle create(float x, float y, float radius) {
+    static Circle create(double x, double y, double radius) {
         return new Circle(x, y, radius);
     }
 
-    public float x() {
+    public double x() {
         return x;
     }
 
-    public float y() {
+    public double y() {
         return y;
     }
 
-    public float radius() {
+    public double radius() {
         return radius;
     }
 
@@ -77,7 +77,7 @@ public final class Circle implements Geometry {
         return Math.sqrt(sqr(x - point.x()) + sqr(y - point.y())) <= radius;
     }
 
-    private float sqr(float x) {
+    private double sqr(double x) {
         return x * x;
     }
 
